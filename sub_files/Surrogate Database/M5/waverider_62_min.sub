@@ -1,0 +1,95 @@
+#!/bin/bash
+##
+## STARCCM+ submission script for PBS on CR2 
+## -------------------------------------------
+##
+## "STARCCM+-sub2022v1"
+## Follow the 6 steps below to configure your job
+##
+## STEP 1:
+##
+## Enter a job name after the -N on the line below:
+##
+#PBS -N waverider_62_min
+##
+## STEP 2:
+##
+## Select the number of cpus/cores required by modifying the #PBS -l select line below
+##
+## Normally you select cpus in chunks of 16 cpus
+## The Maximum value for ncpus is 16 and mpiprocs MUST be the same value as ncpus.
+##
+## If more than 16 cpus are required then select multiple chunks of 16
+## e.g. 16 CPUs: select=1:ncpus=16:mpiprocs=16
+##      32 CPUs: select=2:ncpus=16:mpiprocs=16
+##      ..etc..
+##
+#PBS -l select=1:ncpus=16:mpiprocs=16
+##
+## STEP 3:
+##
+## Select the correct queue by modifying the #PBS -q line below
+##
+## half_hour    -  30 minutes
+## one_hour     -   1 hour
+## three_hour   -   3 hours
+## six_hour     -   6 hours
+## half_day     -  12 hours
+## one_day      -  24 hours
+## two_day      -  48 hours
+## five_day     - 120 hours
+## ten_day      - 240 hours (by special arrangement)
+##
+#PBS -q one_hour
+##
+## STEP 4:
+##
+## Replace the hpc@cranfield.ac.uk email address
+## with your Cranfield email address on the #PBS -M line below:
+## Your email address is NOT your username
+##
+#PBS -m abe
+#PBS -M jade.nassif.385@cranfield.ac.uk
+##
+## ====================================
+## DO NOT CHANGE THE LINES BETWEEN HERE
+## ====================================
+#PBS -l application=starccm
+#PBS -j oe
+#PBS -W sandbox=PRIVATE
+#PBS -k n
+ln -s $PWD $PBS_O_WORKDIR/$PBS_JOBID
+## Change to working directory
+cd $PBS_O_WORKDIR
+## Calculate number of CPUs
+export cpus=`cat $PBS_NODEFILE | wc -l`
+## Dedug options - uncomment to enable
+## export FI_LOG_LEVEL=info
+## set some MPI tuning parameters to use the correct transport
+## ========
+## AND HERE
+## ========
+##
+## STEP 5:
+##
+## Load the production USE
+module use /apps/modules/all
+##  Load the default application environment
+##
+module load STAR-CCM+/19.02.009-r8
+##
+## STEP 6:
+##
+## Put the correct parameters in the fluent execution line
+## below to run STARCCM+
+## Unless you are sure do not change the default parameters
+##
+## The main parameter to modify is the input filename - change YOURINPUT.sim to your own filename
+
+starccm+ -batch -batchsystem pbs -mpi openmpi -rsh ssh waverider_62_min.sim
+
+## Tidy up the log directory
+## DO NOT CHANGE THE LINE BELOW
+## ============================
+rm $PBS_O_WORKDIR/$PBS_JOBID
+#
